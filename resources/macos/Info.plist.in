@@ -36,6 +36,8 @@
 	<string>local.code.editor</string>
 	<key>CFBundleName</key>
 	<string>Code</string>
+	<key>CFBundleDisplayName</key>
+	<string>Code</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>NSHighResolutionCapable</key>
