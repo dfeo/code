@@ -1,7 +1,7 @@
 local common = require "core.common"
 local style = {}
 
-style.divider_size = common.round(1 * SCALE)
+style.divider_size = 0
 style.scrollbar_size = common.round(4 * SCALE)
 style.expanded_scrollbar_size = common.round(12 * SCALE)
 style.minimum_thumb_size = common.round(20 * SCALE)
@@ -35,11 +35,11 @@ style.margin = {
 --
 -- On High DPI monitor or non RGB monitor you may consider using antialiasing grayscale instead.
 -- The antialiasing grayscale with full hinting is interesting for crisp font rendering.
-style.font = renderer.font.load(DATADIR .. "/fonts/FiraSans-Regular.ttf", 15 * SCALE)
-style.big_font = style.font:copy(46 * SCALE)
-style.icon_font = renderer.font.load(DATADIR .. "/fonts/icons.ttf", 16 * SCALE, {antialiasing="grayscale", hinting="full"})
-style.icon_big_font = style.icon_font:copy(23 * SCALE)
-style.code_font = renderer.font.load(DATADIR .. "/fonts/JetBrainsMono-Regular.ttf", 15 * SCALE)
+style.font = renderer.font.load(DATADIR .. "/fonts/JetBrainsMono-Regular.ttf", 14 * SCALE)
+style.big_font = style.font:copy(40 * SCALE)
+style.icon_font = renderer.font.load(DATADIR .. "/fonts/icons.ttf", 12 * SCALE, {antialiasing="grayscale", hinting="full"})
+style.icon_big_font = style.icon_font:copy(14 * SCALE)
+style.code_font = renderer.font.load(DATADIR .. "/fonts/JetBrainsMono-Regular.ttf", 14 * SCALE)
 
 style.syntax = {}
 
@@ -51,5 +51,8 @@ style.syntax_fonts = {}
 -- style.syntax_fonts["comment"] = renderer.font.load(path_to_font, size_of_font, rendering_options)
 
 style.log = {}
+
+-- Code fork: hide internal dividers (between sidebar/editor, between tabs)
+style.divider = style.background
 
 return style

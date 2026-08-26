@@ -139,7 +139,7 @@ config.highlight_current_line = true
 ---
 ---The default is 120% of the height of the text (1.2).
 ---@type number
-config.line_height = 1.2
+config.line_height = 1.67
 
 ---The number of spaces each level of indentation represents.
 ---

@@ -3,11 +3,20 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if defined(__APPLE__) && defined(MACOS_USE_BUNDLE)
+const char *code_take_pending_open_paths(void);
+#endif
 #include <stdbool.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
 #include <sys/types.h>
+
+#if defined(__APPLE__)
+#include <objc/runtime.h>
+#include <objc/message.h>
+#endif
 #include <sys/stat.h>
 #include "api.h"
 #include "../rencache.h"
@@ -495,6 +504,120 @@ static int f_set_window_mode(lua_State *L) {
 static int f_set_window_bordered(lua_State *L) {
   RenWindow *window_renderer = *(RenWindow**) luaL_checkudata(L, 1, API_TYPE_RENWINDOW);
   SDL_SetWindowBordered(window_renderer->window, lua_toboolean(L, 2));
+  return 0;
+}
+
+
+// Code fork: macOS-only — returns paths the OS asked the app to open
+// (drag-onto-Dock, Finder "Open With", etc.) as a '\1'-separated string,
+// then clears the buffer. Empty string if none pending.
+static int f_get_pending_open_paths(lua_State *L) {
+#if defined(__APPLE__) && defined(MACOS_USE_BUNDLE)
+  const char *paths = code_take_pending_open_paths();
+  if (!paths || !*paths) {
+    lua_pushstring(L, "");
+    return 1;
+  }
+  lua_pushstring(L, paths);
+  return 1;
+#else
+  lua_pushstring(L, "");
+  return 1;
+#endif
+}
+
+
+// Code fork: macOS-only — hide the native titlebar text and traffic lights
+// while keeping the standard macOS rounded window outline. Also sets the
+// window background to the editor color so the titlebar area matches.
+static int f_hide_window_chrome(lua_State *L) {
+#if defined(__APPLE__)
+  RenWindow *window_renderer = *(RenWindow**) luaL_checkudata(L, 1, API_TYPE_RENWINDOW);
+  SDL_Window *sdl_window = window_renderer->window;
+  void *ns_window_ptr = SDL_GetPointerProperty(
+    SDL_GetWindowProperties(sdl_window),
+    SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+  if (!ns_window_ptr) return 0;
+
+  ((void (*)(id, SEL, BOOL))objc_msgSend)(
+    (id)ns_window_ptr, sel_registerName("setTitlebarAppearsTransparent:"), YES);
+  ((void (*)(id, SEL, unsigned long))objc_msgSend)(
+    (id)ns_window_ptr,
+    sel_registerName("setTitleVisibility:"),
+    (unsigned long)2 /* NSWindowTitleHidden */);
+
+  {
+    Class nsColor = objc_getClass("NSColor");
+    SEL colorSel = sel_registerName("colorWithRed:green:blue:alpha:");
+    void *color = ((void *(*)(id, SEL, double, double, double, double))objc_msgSend)(
+      (id)nsColor, colorSel, 0.851, 0.851, 0.851, 1.0);
+    if (color) {
+      ((void (*)(id, SEL, void *))objc_msgSend)(
+        (id)ns_window_ptr, sel_registerName("setBackgroundColor:"), color);
+    }
+  }
+
+  SEL std_btn_sel = sel_registerName("standardWindowButton:");
+  for (unsigned long i = 0; i < 3; i++) {
+    void *btn = ((void *(*)(id, SEL, unsigned long))objc_msgSend)(
+      (id)ns_window_ptr, std_btn_sel, i);
+    if (btn) {
+      ((void (*)(id, SEL, BOOL))objc_msgSend)(
+        (id)btn, sel_registerName("setHidden:"), YES);
+    }
+  }
+#endif
+  return 0;
+}
+
+
+// Code fork: macOS-only — round the window's content-view layer so the
+// rendered content follows the rounded outline. Uses Objective-C runtime so
+// we do not need to import <Cocoa/Cocoa.h> from this C TU.
+static int f_set_window_corner_radius(lua_State *L) {
+#if defined(__APPLE__)
+  RenWindow *window_renderer = *(RenWindow**) luaL_checkudata(L, 1, API_TYPE_RENWINDOW);
+  double radius = luaL_checknumber(L, 2);
+
+  SDL_Window *sdl_window = window_renderer->window;
+  void *ns_window_ptr = SDL_GetPointerProperty(
+    SDL_GetWindowProperties(sdl_window),
+    SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+  if (!ns_window_ptr) return 0;
+
+  // Round the content view's layer so the drawn pixels follow the rounded
+  // outline of the window. This is the part that actually clips what SDL
+  // renders, without touching the window background (which would break
+  // drag-and-drop).
+  void *content_view = ((void *(*)(id, SEL))objc_msgSend)(
+    (id)ns_window_ptr, sel_registerName("contentView"));
+  if (content_view) {
+    ((void (*)(id, SEL, BOOL))objc_msgSend)(
+      (id)content_view, sel_registerName("setWantsLayer:"), YES);
+    void *layer = ((void *(*)(id, SEL))objc_msgSend)(
+      (id)content_view, sel_registerName("layer"));
+    if (layer) {
+      ((void (*)(id, SEL, double))objc_msgSend)(
+        (id)layer, sel_registerName("setCornerRadius:"), radius);
+      ((void (*)(id, SEL, BOOL))objc_msgSend)(
+        (id)layer, sel_registerName("setMasksToBounds:"), YES);
+    }
+  }
+
+  // Tint the window background to the editor color so the rounded corners
+  // (which are transparent after masksToBounds) show the editor color
+  // instead of the default white.
+  {
+    Class nsColor = objc_getClass("NSColor");
+    SEL colorSel = sel_registerName("colorWithRed:green:blue:alpha:");
+    void *color = ((void *(*)(id, SEL, double, double, double, double))objc_msgSend)(
+      (id)nsColor, colorSel, 0.851, 0.851, 0.851, 1.0);
+    if (color) {
+      ((void (*)(id, SEL, void *))objc_msgSend)(
+        (id)ns_window_ptr, sel_registerName("setBackgroundColor:"), color);
+    }
+  }
+#endif
   return 0;
 }
 
@@ -1496,6 +1619,9 @@ static const luaL_Reg lib[] = {
   { "set_window_mode",       f_set_window_mode       },
   { "get_window_mode",       f_get_window_mode       },
   { "set_window_bordered",   f_set_window_bordered   },
+  { "set_window_corner_radius", f_set_window_corner_radius },
+  { "hide_window_chrome",       f_hide_window_chrome       },
+  { "get_pending_open_paths",   f_get_pending_open_paths   },
   { "set_window_hit_test",   f_set_window_hit_test   },
   { "get_window_size",       f_get_window_size       },
   { "set_window_size",       f_set_window_size       },

@@ -2,7 +2,7 @@ require "core.strict"
 require "core.regex"
 local common = require "core.common"
 local config = require "core.config"
-local style = require "colors.default"
+local style = require "colors.left"
 local command
 local keymap
 local dirwatch
@@ -396,7 +396,13 @@ function core.init()
     end)
   end
 
-  core.configure_borderless_window()
+core.configure_borderless_window()
+
+  -- Code fork: native macOS window with hidden chrome (native rounded
+  -- borders + native traffic lights hidden so we can draw our own).
+  if not config.borderless and system.hide_window_chrome then
+    system.hide_window_chrome(core.window)
+  end
 
   if #plugins_refuse_list.userdir.plugins > 0 or #plugins_refuse_list.datadir.plugins > 0 then
     local opt = {
@@ -1156,6 +1162,12 @@ function core.deprecation_log(kind)
   alerted_deprecations[kind] = true
   core.warn("Used deprecated functionality [%s]. Check if your plugins are up to date.", kind)
 end
+
+-- Code fork: distractionless (Left-style) defaults
+config.minimap   = false
+config.status_bar = false
+config.soft_wrap  = true
+config.borderless = false
 
 
 return core

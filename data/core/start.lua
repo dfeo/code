@@ -12,13 +12,13 @@ EXEDIR = EXEFILE:match("^(.+)[/\\][^/\\]+$")
 if MACOS_RESOURCES then
   DATADIR = MACOS_RESOURCES
 else
-  local prefix = os.getenv('LITE_PREFIX') or EXEDIR:match("^(.+)[/\\]bin$")
-  DATADIR = prefix and (prefix .. PATHSEP .. 'share' .. PATHSEP .. 'lite-xl') or (EXEDIR .. PATHSEP .. 'data')
+  local prefix = os.getenv('CODE_PREFIX') or EXEDIR:match("^(.+)[/\\]bin$")
+  DATADIR = prefix and (prefix .. PATHSEP .. 'share' .. PATHSEP .. 'code') or (EXEDIR .. PATHSEP .. 'data')
 end
 USERDIR = (system.get_file_info(EXEDIR .. PATHSEP .. 'user') and (EXEDIR .. PATHSEP .. 'user'))
-       or os.getenv("LITE_USERDIR")
-       or ((os.getenv("XDG_CONFIG_HOME") and os.getenv("XDG_CONFIG_HOME") .. PATHSEP .. "lite-xl"))
-       or (HOME and (HOME .. PATHSEP .. '.config' .. PATHSEP .. 'lite-xl'))
+       or os.getenv("CODE_USERDIR")
+       or ((os.getenv("XDG_CONFIG_HOME") and os.getenv("XDG_CONFIG_HOME") .. PATHSEP .. "code"))
+       or (HOME and (HOME .. PATHSEP .. '.config' .. PATHSEP .. 'code'))
 
 package.path = DATADIR .. '/?.lua;'
 package.path = DATADIR .. '/?/init.lua;' .. package.path

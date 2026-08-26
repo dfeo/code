@@ -69,6 +69,8 @@ static void get_exe_filename(char *buf, int sz) {
 void enable_momentum_scroll();
 #ifdef MACOS_USE_BUNDLE
 void set_macos_bundle_resources(lua_State *L);
+void code_install_app_delegate(void);
+const char *code_take_pending_open_paths(void);
 #endif
 #endif
 
@@ -109,7 +111,7 @@ int main(int argc, char **argv) {
   signal(SIGPIPE, SIG_IGN);
 #endif
 
-  SDL_SetAppMetadata("Lite XL", LITE_PROJECT_VERSION_STR, "com.lite_xl.LiteXL");
+  SDL_SetAppMetadata("Code", LITE_PROJECT_VERSION_STR, "local.code.editor");
   if (!SDL_Init(SDL_INIT_EVENTS)) {
     fprintf(stderr, "Error initializing sdl: %s", SDL_GetError());
     exit(1);
@@ -164,6 +166,7 @@ init_lua:
   enable_momentum_scroll();
   #ifdef MACOS_USE_BUNDLE
     set_macos_bundle_resources(L);
+    code_install_app_delegate();
   #endif
 #endif
   SDL_SetEventEnabled(SDL_EVENT_TEXT_INPUT, true);
@@ -180,8 +183,8 @@ init_lua:
     "  HOME = os.getenv('" LITE_OS_HOME "')\n"
     "  local exedir = match(EXEFILE, '^(.*)" LITE_PATHSEP_PATTERN LITE_NONPATHSEP_PATTERN "$')\n"
     "  local prefix = os.getenv('LITE_PREFIX') or match(exedir, '^(.*)" LITE_PATHSEP_PATTERN "bin$')\n"
-    "  dofile((MACOS_RESOURCES or (prefix and prefix .. '/share/lite-xl' or exedir .. '/data')) .. '/core/start.lua')\n"
-    "  core = require(os.getenv('LITE_XL_RUNTIME') or 'core')\n"
+    "  dofile((MACOS_RESOURCES or (prefix and prefix .. '/share/code' or exedir .. '/data')) .. '/core/start.lua')\n"
+    "  core = require(os.getenv('CODE_RUNTIME') or 'core')\n"
     "  core.init()\n"
     "  core.run()\n"
     "end, function(err)\n"
@@ -198,7 +201,7 @@ init_lua:
     "    fp:close()\n"
     "    error_path = system.absolute_path(error_path)\n"
     "  end\n"
-    "  system.show_fatal_error('Lite XL internal error',\n"
+    "  system.show_fatal_error('Code internal error',\n"
     "    'An internal error occurred in a critical part of the application.\\n\\n'..\n"
     "    'Error: '..tostring(err)..'\\n\\n'..\n"
     "    'Details can be found in \\\"'..error_path..'\\\"')\n"

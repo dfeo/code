@@ -11,17 +11,8 @@ local icon_colors = {
   color9 = { common.color "#f7c95cff" }
 };
 
-local restore_command = {
-  symbol = "w", action = function() system.set_window_mode(core.window, "normal") end
-}
-
-local maximize_command = {
-  symbol = "W", action = function() system.set_window_mode(core.window, "maximized") end
-}
-
 local title_commands = {
   {symbol = "_", action = function() system.set_window_mode(core.window, "minimized") end},
-  maximize_command,
   {symbol = "X", action = function() core.quit() end},
 }
 
@@ -59,7 +50,6 @@ end
 
 function TitleView:update()
   self.size.y = self.visible and title_view_height() or 0
-  title_commands[2] = core.window_mode == "maximized" and restore_command or maximize_command
   TitleView.super.update(self)
 end
 

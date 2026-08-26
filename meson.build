@@ -1,6 +1,6 @@
-project('lite-xl',
+project('code',
     ['c'],
-    version : '2.1.7',
+    version : '1.0.0',
     license : 'MIT',
     meson_version : '>= 0.63',
     default_options : [
@@ -100,9 +100,9 @@ elif get_option('bundle') and host_machine.system() == 'darwin'
     )
 else
     lite_bindir = 'bin'
-    lite_docdir = get_option('datadir') / 'doc' / 'lite-xl'
-    lite_datadir = get_option('datadir') / 'lite-xl'
-    lpm_userdir = 'lite-xl'
+    lite_docdir = get_option('datadir') / 'doc' / 'code'
+    lite_datadir = get_option('datadir') / 'code'
+    lpm_userdir = 'code'
     lpm_install_dir = get_option('datadir')
     if host_machine.system() == 'linux'
         git_command = find_program('git', required : false)
@@ -145,7 +145,7 @@ else
             conf_data.set('METAINFO_RELEASES', '')
         endif
 
-        install_data('resources' / 'icons' / 'lite-xl.svg',
+        install_data('resources' / 'icons' / 'code.svg',
             install_dir : get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps'
         )
         install_data('resources' / 'linux' / 'com.lite_xl.LiteXL.desktop',

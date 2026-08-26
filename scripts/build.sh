@@ -68,7 +68,7 @@ main() {
   local reconfigure
   local lpm_path
   local should_reconfigure
-  local destdir="lite-xl"
+  local destdir="Code.app"
 
   for i in "$@"; do
     case $i in
@@ -117,7 +117,7 @@ main() {
           echo "Warning: ignoring --bundle option, works only under macOS."
         else
           bundle="-Dbundle=true"
-          destdir="Lite XL.app"
+          destdir="Code.app"
         fi
         shift
         ;;
@@ -286,6 +286,17 @@ main() {
 
   meson install -C "${build_dir}" --destdir "$destdir" \
     --skip-subprojects=freetype2,lua,pcre2 --no-rebuild
+
+  # Patch the welcome plugin to say "Code" instead of "Lite XL"
+  local welcome_lua
+  if [[ "$destdir" = /* ]]; then
+    welcome_lua="${destdir}/Contents/Resources/plugins/welcome.lua"
+  else
+    welcome_lua="${build_dir}/${destdir}/Contents/Resources/plugins/welcome.lua"
+  fi
+  if [[ -f "$welcome_lua" ]]; then
+    sed -i '' 's/Lite XL/Code/g; s/lite-xl/code/g' "$welcome_lua"
+  fi
 }
 
 main "$@"
