@@ -35,11 +35,11 @@ style.margin = {
 --
 -- On High DPI monitor or non RGB monitor you may consider using antialiasing grayscale instead.
 -- The antialiasing grayscale with full hinting is interesting for crisp font rendering.
-style.font = renderer.font.load(DATADIR .. "/fonts/JetBrainsMono-Regular.ttf", 14 * SCALE)
+style.font = renderer.font.load(DATADIR .. "/fonts/FiraCode-Regular.ttf", 14 * SCALE)
 style.big_font = style.font:copy(40 * SCALE)
 style.icon_font = renderer.font.load(DATADIR .. "/fonts/icons.ttf", 12 * SCALE, {antialiasing="grayscale", hinting="full"})
 style.icon_big_font = style.icon_font:copy(14 * SCALE)
-style.code_font = renderer.font.load(DATADIR .. "/fonts/JetBrainsMono-Regular.ttf", 14 * SCALE)
+style.code_font = renderer.font.load(DATADIR .. "/fonts/FiraCode-Regular.ttf", 14 * SCALE)
 
 style.syntax = {}
 
