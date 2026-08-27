@@ -1,4 +1,4 @@
--- mod-version: 4.0.0 --priority:10
+-- mod-version:4.0.0 --priority:10
 local core = require "core"
 local common = require "core.common"
 local DocView = require "core.docview"

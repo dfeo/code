@@ -1,6 +1,12 @@
 #!/bin/bash
 # Fetch and bundle community plugins for the Code editor.
 #
+# Uses GNU sed (gsed) because macOS BSD sed does not support \14 in
+# replacement strings (treated as \1 + literal "4").
+
+# Prefer gsed; fall back to sed if gsed isn't available.
+SED="$(command -v gsed || command -v sed)"
+#
 # Reads data/plugins.txt (one plugin id per line) and installs each via lpm
 # into data/plugins/ so they ship with the app on every build.
 #
@@ -55,17 +61,22 @@ while read -r PLUGIN; do
   if [[ -f "$PLUGIN_FILE" ]]; then
     # Match: -- mod-version:[spaces]N(.M)[trailing]
     # Replace with: -- mod-version:4.0.0[trailing] (no space between : and 4)
-    # Note: the \14 in the replacement is \1 + "4.0.0" (no separator).
-    sed -i '' -E 's/^(--+[[:space:]]*mod-version:[[:space:]]*)[0-9]+(\.[0-9]+)*(.*)$/\14.0.0\3/' "$PLUGIN_FILE"
+    # Trick: capture the prefix WITHOUT the colon in \1, then put ":4.0.0" in the
+    # replacement. This avoids the "after the colon space" leaking through.
+    "$SED" -i -E 's/^(--+[[:space:]]*mod-version):[[:space:]]+([0-9]+(\.[0-9]+)*)(.*)$/\1:4.0.0\4/' "$PLUGIN_FILE"
   fi
 done < "$PLUGINS_FILE"
 
 # Patch ALL plugin files to mod-version:4.0.0 to be safe.
 # Match anywhere on the line, replace mod-version:[spaces]N(.M) with 4.0.0
 # (no space between : and 4 — Code.app's regex --.*mod-version:(\d+) doesn't allow one).
+# This catches both repo-bundled plugins (e.g. linewrapping has -- mod-version: 4 --priority:10)
+# and lpm-installed ones (mod-version:4.0.0).
 for f in "$PLUGINS_DIR"/*.lua; do
   [[ -f "$f" ]] || continue
-  sed -i '' -E 's/^(--+[[:space:]]*mod-version:[[:space:]]*)[0-9]+(\.[0-9]+)*(.*)$/\14.0.0\3/' "$f"
+  # \14 in replacement is \1 + literal "4" (gnu-sed quirk). Use \1:4.0.0\4 instead.
+  # Use [[:space:]]* (zero or more) so it works for headers with no space after :.
+  "$SED" -i -E 's/^(--+[[:space:]]*mod-version):[[:space:]]*([0-9]+(\.[0-9]+)*)(.*)$/\1:4.0.0\4/' "$f"
 done
 
 echo "fetch-plugins: done"
