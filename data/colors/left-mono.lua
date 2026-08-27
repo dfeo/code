@@ -9,9 +9,9 @@ style.background     = { common.color "#d9d9d9" }
 style.background2    = { common.color "#d9d9d9" }
 style.background3    = { common.color "#d9d9d9" }
 
-style.text           = { common.color "#1a1a1a" }
-style.caret          = { common.color "#1a1a1a" }
-style.accent         = { common.color "#1a1a1a" }
+style.text           = { common.color "#4a4a4a" }
+style.caret          = { common.color "#000000" }
+style.accent         = { common.color "#000000" }
 style.dim            = { common.color "#8a8a8a" }
 style.divider        = { common.color "#b6b6b6" }
 style.selection      = { common.color "#b9c4ce" }
@@ -35,23 +35,32 @@ style.error     = { common.color "#000000" }
 style.modified  = { common.color "#000000" }
 
 -- Syntax: pure grayscale (black -> light gray)
-style.syntax["normal"]   = { common.color "#1a1a1a" } -- base text
-style.syntax["symbol"]   = { common.color "#5a5a5a" } -- operators, punctuation
-style.syntax["comment"]  = { common.color "#8a8a8a" } -- light gray (italic via syntax_fonts)
+style.syntax["normal"]   = { common.color "#4a4a4a" } -- base text (medium gray, recedes)
+style.syntax["symbol"]   = { common.color "#7a7a7a" } -- operators, punctuation (light)
+style.syntax["comment"]  = { common.color "#a8a8a8" } -- comments (very light, italic)
 style.syntax["keyword"]  = { common.color "#000000" } -- pure black, bold
-style.syntax["keyword2"] = { common.color "#3a3a3a" } -- self, types
-style.syntax["number"]   = { common.color "#4a4a4a" } -- numerics
-style.syntax["literal"]  = { common.color "#4a4a4a" } -- true/false/null
-style.syntax["string"]   = { common.color "#6a6a6a" } -- italic-ish, medium gray
-style.syntax["operator"] = { common.color "#2a2a2a" } -- =, +, =>, dark
+style.syntax["keyword2"] = { common.color "#2a2a2a" } -- self, types (dark, bold)
+style.syntax["number"]   = { common.color "#2a2a2a" } -- numerics (dark)
+style.syntax["literal"]  = { common.color "#2a2a2a" } -- true/false/null (dark)
+style.syntax["string"]   = { common.color "#5a5a5a" } -- medium gray (italic)
+style.syntax["operator"] = { common.color "#1a1a1a" } -- =, +, =>, near-black
 style.syntax["function"] = { common.color "#000000" } -- function names, bold black
 
--- Italic for comment + keyword to add typographic distinction without color
+-- Italic for comment + string; bold for keyword + function + keyword2
 style.syntax_fonts = {}
 style.syntax_fonts["comment"]  = renderer.font.load(
   DATADIR .. "/fonts/FiraCode-Regular.ttf", 14 * SCALE,
   { italic = true, bold = false })
+style.syntax_fonts["string"]   = renderer.font.load(
+  DATADIR .. "/fonts/FiraCode-Regular.ttf", 14 * SCALE,
+  { italic = true, bold = false })
 style.syntax_fonts["keyword"]  = renderer.font.load(
+  DATADIR .. "/fonts/FiraCode-Regular.ttf", 14 * SCALE,
+  { italic = false, bold = true })
+style.syntax_fonts["keyword2"] = renderer.font.load(
+  DATADIR .. "/fonts/FiraCode-Regular.ttf", 14 * SCALE,
+  { italic = false, bold = true })
+style.syntax_fonts["function"] = renderer.font.load(
   DATADIR .. "/fonts/FiraCode-Regular.ttf", 14 * SCALE,
   { italic = false, bold = true })
 
