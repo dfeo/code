@@ -7,6 +7,11 @@ fi
 
 source scripts/common.sh
 
+# Bundle community plugins (reads data/plugins.txt) so they ship with the .app
+if [[ -f "$(pwd)/scripts/fetch-plugins.sh" ]]; then
+  bash "$(pwd)/scripts/fetch-plugins.sh" || true
+fi
+
 show_help() {
   echo
   echo "Usage: $0 <OPTIONS>"

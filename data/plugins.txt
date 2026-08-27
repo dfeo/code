@@ -1,0 +1,10 @@
+bracketmatch
+language_php
+language_psql
+language_json
+language_yaml
+language_ts
+language_tsx
+language_dart
+language_sh
+selectionhighlight
