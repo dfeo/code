@@ -2,7 +2,7 @@ require "core.strict"
 require "core.regex"
 local common = require "core.common"
 local config = require "core.config"
-local style = require "colors.left"
+local style = require "colors.left-mono"
 local command
 local keymap
 local dirwatch
