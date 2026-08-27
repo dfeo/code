@@ -53,22 +53,19 @@ while read -r PLUGIN; do
   # Patch the mod-version header to 4.0.0 (matches Code.app's MOD_VERSION)
   PLUGIN_FILE="$PLUGINS_DIR/${PLUGIN}.lua"
   if [[ -f "$PLUGIN_FILE" ]]; then
-    sed -i '' 's/^-- *mod-version:[[:space:]]*[0-9]\+\(\.[0-9]\+\)*$/-- mod-version:4.0.0/' "$PLUGIN_FILE"
+    # Match: -- mod-version:[spaces]N(.M)[trailing]
+    # Replace with: -- mod-version:4.0.0[trailing] (no space between : and 4)
+    # Note: the \14 in the replacement is \1 + "4.0.0" (no separator).
+    sed -i '' -E 's/^(--+[[:space:]]*mod-version:[[:space:]]*)[0-9]+(\.[0-9]+)*(.*)$/\14.0.0\3/' "$PLUGIN_FILE"
   fi
 done < "$PLUGINS_FILE"
 
 # Patch ALL plugin files to mod-version:4.0.0 to be safe.
+# Match anywhere on the line, replace mod-version:[spaces]N(.M) with 4.0.0
+# (no space between : and 4 — Code.app's regex --.*mod-version:(\d+) doesn't allow one).
 for f in "$PLUGINS_DIR"/*.lua; do
   [[ -f "$f" ]] || continue
-  # Process each of the first 3 lines individually (BSD sed has no { } blocks
-  # for range addressing on macOS).
-  for n in 1 2 3; do
-    LINE="$(sed -n "${n}p" "$f")"
-    if [[ "$LINE" =~ ^--+[[:space:]]*mod-version:[[:space:]]*[0-9] ]] \
-       && ! [[ "$LINE" =~ ^--+[[:space:]]*mod-version:[[:space:]]*4([[:space:]]|$|\.) ]]; then
-      sed -i '' "${n}s/^(--\+[[:space:]]*mod-version:)[[:space:]]*[0-9]\+\(\.[0-9]\+\)*/\1 4.0.0/" "$f"
-    fi
-  done
+  sed -i '' -E 's/^(--+[[:space:]]*mod-version:[[:space:]]*)[0-9]+(\.[0-9]+)*(.*)$/\14.0.0\3/' "$f"
 done
 
 echo "fetch-plugins: done"

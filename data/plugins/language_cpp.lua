@@ -1,4 +1,4 @@
--- mod-version:4
+-- mod-version: 4.0.0
 local syntax = require "core.syntax"
 
 -- integer suffix combinations as a regex

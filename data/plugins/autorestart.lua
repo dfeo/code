@@ -1,4 +1,4 @@
--- mod-version:4
+-- mod-version: 4.0.0
 local core = require "core"
 local config = require "core.config"
 local command = require "core.command"

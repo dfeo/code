@@ -1,4 +1,4 @@
--- mod-version:4
+-- mod-version: 4.0.0
 local syntax = require "core.syntax"
 
 local function table_merge(a, b)
