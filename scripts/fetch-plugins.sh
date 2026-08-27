@@ -60,12 +60,15 @@ done < "$PLUGINS_FILE"
 # Patch ALL plugin files to mod-version:4.0.0 to be safe.
 for f in "$PLUGINS_DIR"/*.lua; do
   [[ -f "$f" ]] || continue
-  # Only patch files whose first 3 lines contain a mod-version that isn't 4
-  if head -3 "$f" | grep -q "mod-version:3" || head -3 "$f" | grep -q "mod-version:2"; then
-    # Replace mod-version:N(.M) with mod-version:4.0.0 on the line where it appears
-    # (first match within first 3 lines).
-    perl -i -pe 'if ($lines++ < 3 && s/^(-{2,3}\s*mod-version:)\d+(\.\d+)*(\s*.*)$/$1 4.0.0$3/) { }' "$f"
-  fi
+  # Process each of the first 3 lines individually (BSD sed has no { } blocks
+  # for range addressing on macOS).
+  for n in 1 2 3; do
+    LINE="$(sed -n "${n}p" "$f")"
+    if [[ "$LINE" =~ ^--+[[:space:]]*mod-version:[[:space:]]*[0-9] ]] \
+       && ! [[ "$LINE" =~ ^--+[[:space:]]*mod-version:[[:space:]]*4([[:space:]]|$|\.) ]]; then
+      sed -i '' "${n}s/^(--\+[[:space:]]*mod-version:)[[:space:]]*[0-9]\+\(\.[0-9]\+\)*/\1 4.0.0/" "$f"
+    fi
+  done
 done
 
 echo "fetch-plugins: done"

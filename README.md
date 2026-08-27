@@ -1,6 +1,6 @@
 # Code
 
-![screenshot](docs/screenshot.png)
+![screenshot](https://raw.githubusercontent.com/dfeo/code/master/docs/screenshot.png)
 
 A minimalist, distraction-free code editor. Fork of [Lite XL](https://github.com/lite-xl/lite-xl) with a Left-style (Hundred Rabbits) interface — monochrome typography, paper-like background, no internal chrome.
 
