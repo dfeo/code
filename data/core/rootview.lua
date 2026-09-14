@@ -452,6 +452,22 @@ function RootView:process_defer_open_docs()
   self.defer_open_docs = {}
 end
 
+-- macOS delivers files and folders dropped onto the Dock icon through the
+-- application delegate instead of SDL's regular drop event. Consume those
+-- paths before the first update is marked complete so folders follow the
+-- existing initial-project behavior in on_file_dropped().
+function RootView:process_pending_open_paths()
+  local paths = system.get_pending_open_paths()
+  if not paths or paths == "" then return end
+
+  local separator = string.char(1)
+  for filename in (paths .. separator):gmatch("(.-)" .. separator) do
+    if filename ~= "" then
+      self:on_file_dropped(filename, 0, 0)
+    end
+  end
+end
+
 
 function RootView:on_mouse_wheel(...)
   local x, y = self.mouse.x, self.mouse.y
@@ -537,6 +553,7 @@ function RootView:update()
   self:update_drag_overlay()
   self:interpolate_drag_overlay(self.drag_overlay)
   self:interpolate_drag_overlay(self.drag_overlay_tab)
+  self:process_pending_open_paths()
   self:process_defer_open_docs()
   self.first_update_done = true
   self.context_menu:update()
